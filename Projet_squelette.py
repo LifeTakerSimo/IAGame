@@ -23,7 +23,28 @@ class Board:
 
 
     def eval(self, player):
-        return 0
+        score = [0] * 7*6
+        # Sur les horizontales
+        for j in range(6):
+            for i in range(7-4+1):
+                for k in range(4):
+                    score[7*j+i+k] += 1
+        # Sur les verticales
+        for j in range(6-4+1):
+            for i in range(7):
+                for k in range(4):
+                    score[7*j+i+k*7] += 1
+        # Sur les diagonales montantes
+        for j in range(6-4+1):
+            for i in range(7-4+1):
+                for k in range(4):
+                    score[7*j+i+k*7+k] += 1
+        # Sur les diagonales descendantes
+        for j in range(4-1, 6):
+            for i in range(7-4+1):
+                for k in range(4):
+                    score[7*j+i-k*7+k] += 1
+        return score
 
     def copy(self):
         new_board = Board()
