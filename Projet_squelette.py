@@ -15,36 +15,69 @@ for i in range(42):
 
 def alpha_beta_decision(board, turn, ai_level, queue, max_player):
     # random move (to modify)
+    #the grid contains 0 1 2 ( depends on the case )
+    #ia play when turn is pair an huma in unpair
+    print(board.score_position(turn))
+    print(board.grid)
     queue.put(board.get_possible_moves()[rnd.randint(0, len(board.get_possible_moves()) - 1)])
+
+
+def evaluate_window(window,turn):
+    #to verify all the numbers of the cercles possible
+    score = 0
+    piece = (turn % 2) + 1
+    opp = (turn % 2) + 2
+    # definig when the ia is playing
+    if window.count(piece) == 3 and window.count(0) == 1:
+        score += 100*9999
+    elif window.count(piece) == 2 and window.count(0) == 2:
+        score += 50*999
+    elif window.count(piece) == 1 and window.count(0) == 3:
+        score += 10*99
+    if window.count(opp) == 3 and window.count(0) == 1:
+        score -= 80*99
+    return score
+
 
 class Board:
     grid = np.array([[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]])
 
+    def score_position(self, player):
+        #to verify all directions
+        BOARD_WIDTH  = 6 #cols
+        BOARD_HEIGHT = 5 #rows
+        LENGTH = 4
+        score = 0
+
+        ## Score vertical
+        for c in range (BOARD_WIDTH):
+            col_array = [int(i) for i in list(self.grid[:,c])]
+            for r in range (BOARD_HEIGHT-3):
+                window = col_array[r:r+LENGTH]
+                score += evaluate_window(window,player)
+        print("vertical value",score)
+
+        ## Score Horizental
+        for c in range (BOARD_HEIGHT):
+            col_array = [int(i) for i in list(self.grid[:,c])]
+            for r in range (BOARD_WIDTH-3):
+                window = col_array[r:r+LENGTH]
+                score += evaluate_window(window,player)
+        print("second",score)
+
+        ## Score Positive Diagonal
+        for r in range(BOARD_HEIGHT-3):
+            for c in range(BOARD_WIDTH-3):
+                window = [self.grid[r+i][c+i] for i in range(LENGTH)]
+                score += evaluate_window(window, player)
+        print("last",score)
+        return score
 
     def eval(self, player):
-        score = [0] * 7*6
-        # Sur les horizontales
-        for j in range(6):
-            for i in range(7-4+1):
-                for k in range(4):
-                    score[7*j+i+k] += 1
-        # Sur les verticales
-        for j in range(6-4+1):
-            for i in range(7):
-                for k in range(4):
-                    score[7*j+i+k*7] += 1
-        # Sur les diagonales montantes
-        for j in range(6-4+1):
-            for i in range(7-4+1):
-                for k in range(4):
-                    score[7*j+i+k*7+k] += 1
-        # Sur les diagonales descendantes
-        for j in range(4-1, 6):
-            for i in range(7-4+1):
-                for k in range(4):
-                    score[7*j+i-k*7+k] += 1
-        return score
+        return 0
+
+
 
     def copy(self):
         new_board = Board()
