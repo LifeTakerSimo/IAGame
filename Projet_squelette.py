@@ -24,8 +24,8 @@ def alpha_beta_decision(board, turn, ai_level, queue, max_player):
 def evaluate_window(window,turn):
     score = 0
     # definig when the ia is playing
-    piece = (turn % 2) + 1
-    opp = (turn % 2) + 2
+    piece = (turn % 2) + 2
+    opp = (turn % 2) + 1
     #getting the score based on the player and number of empty spots
     if window.count(piece) == 3 and window.count(0) == 1:
         score += 100*9999
