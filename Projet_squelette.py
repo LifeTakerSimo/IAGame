@@ -18,7 +18,6 @@ def alpha_beta_decision(board, turn, ai_level, queue, max_player):
     #the grid contains 0 1 2 ( depends on the case )
     #ia play when turn is pair an huma in unpair
     print(board.score_position(turn))
-    print(board.grid)
     queue.put(board.get_possible_moves()[rnd.randint(0, len(board.get_possible_moves()) - 1)])
 
 #To verify how many pieces we can make in one sequence to get 4 pieces
@@ -41,7 +40,6 @@ def evaluate_window(window,turn):
         score -= 50*99
     if window.count(opp) == 3 and window.count(0) == 1:
         score -= 10
-
     return score
 
 
@@ -80,8 +78,12 @@ class Board:
             for c in range(BOARD_WIDTH-3):
                 window = [self.grid[r-i][c-i] for i in range(LENGTH)]
                 score += evaluate_window(window, player)
-        return score
 
+        ## Score center column
+        center_array = [int(i) for i in list(self.grid[:, BOARD_WIDTH//2])]
+        center_count = center_array.count(player)
+        score += center_count * 99
+        return score
 
     def copy(self):
         new_board = Board()
