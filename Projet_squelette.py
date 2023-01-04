@@ -15,8 +15,6 @@ for i in range(42):
 
 def alpha_beta_decision(board, turn, ai_level, queue, max_player):
     # random move (to modify)
-    #the grid contains 0 1 2 ( depends on the case )
-    #ia play when turn is pair an huma in unpair
     print(board.score_position(turn))
     queue.put(board.get_possible_moves()[rnd.randint(0, len(board.get_possible_moves()) - 1)])
 
