@@ -21,30 +21,35 @@ def alpha_beta_decision(board, turn, ai_level, queue, max_player):
     print(board.grid)
     queue.put(board.get_possible_moves()[rnd.randint(0, len(board.get_possible_moves()) - 1)])
 
-
+#To verify how many pieces we can make in one sequence to get 4 pieces
 def evaluate_window(window,turn):
-    #to verify all the numbers of the cercles possible
     score = 0
+    # definig when the ia is playing
     piece = (turn % 2) + 1
     opp = (turn % 2) + 2
-    # definig when the ia is playing
+    #getting the score based on the player and number of empty spots
     if window.count(piece) == 3 and window.count(0) == 1:
         score += 100*9999
     elif window.count(piece) == 2 and window.count(0) == 2:
         score += 50*999
     elif window.count(piece) == 1 and window.count(0) == 3:
-        score += 10*99
+        score += 10
+
     if window.count(opp) == 3 and window.count(0) == 1:
-        score -= 80*99
+        score -= 100*999
+    if window.count(opp) == 2 and window.count(0) == 2:
+        score -= 50*99
+    if window.count(opp) == 3 and window.count(0) == 1:
+        score -= 10
+
     return score
 
 
 class Board:
     grid = np.array([[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]])
-
+#To give a score to a grid based on directions
     def score_position(self, player):
-        #to verify all directions
         BOARD_WIDTH  = 6 #cols
         BOARD_HEIGHT = 5 #rows
         LENGTH = 4
@@ -56,7 +61,6 @@ class Board:
             for r in range (BOARD_HEIGHT-3):
                 window = col_array[r:r+LENGTH]
                 score += evaluate_window(window,player)
-        print("vertical value",score)
 
         ## Score Horizental
         for c in range (BOARD_HEIGHT):
@@ -64,19 +68,19 @@ class Board:
             for r in range (BOARD_WIDTH-3):
                 window = col_array[r:r+LENGTH]
                 score += evaluate_window(window,player)
-        print("second",score)
 
         ## Score Positive Diagonal
         for r in range(BOARD_HEIGHT-3):
             for c in range(BOARD_WIDTH-3):
                 window = [self.grid[r+i][c+i] for i in range(LENGTH)]
                 score += evaluate_window(window, player)
-        print("last",score)
+
+        ## Score Negative Diagonal
+        for r in range(BOARD_HEIGHT-3):
+            for c in range(BOARD_WIDTH-3):
+                window = [self.grid[r-i][c-i] for i in range(LENGTH)]
+                score += evaluate_window(window, player)
         return score
-
-    def eval(self, player):
-        return 0
-
 
 
     def copy(self):
