@@ -1,9 +1,13 @@
+import math
 import tkinter as tk
 from tkinter import ttk
 import numpy as np
 import random as rnd
 from threading import Thread
 from queue import Queue
+import math
+
+
 
 
 disk_color = ['white', 'red', 'orange']
@@ -14,9 +18,76 @@ for i in range(42):
     player_type.append('AI: alpha-beta level '+str(i+1))
 
 def alpha_beta_decision(board, turn, ai_level, queue, max_player):
-    # random move (to modify)
-    print(board.score_position(turn))
-    queue.put(board.get_possible_moves()[rnd.randint(0, len(board.get_possible_moves()) - 1)])
+    possible_moves = board.get_possible_moves()
+    best_move = possible_moves[0]
+    best_value = -999999999
+    alpha = -999999999
+    beta = 99999999
+    for move in possible_moves:
+        copy_board = board.copy()
+        copy_board.add_disk(move, max_player, False)
+
+        valueAB = alpha_beta_algo(copy_board, ai_level, turn, alpha, beta, game.current_player())
+        if valueAB > best_value:
+            best_value = valueAB
+            best_move = move
+        alpha = max(alpha, best_value)
+    queue.put(best_move)
+
+def maximizeAlpha(board,turn, alpha, beta, max_player):
+    possibleMoves = board.get_possible_moves()
+    valueAB = -99999999
+    for move in possibleMoves :
+        copyBoard =board.copy()
+        copyBoard.add_disk(move, max_player, False)
+        min_value = minimizeBeta(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2))
+        valueAB = max(valueAB, min_value)
+        if valueAB >= beta:
+            return valueAB
+        alpha = max(alpha, valueAB)
+    return valueAB
+
+def minimizeBeta(board,turn, alpha, beta, max_player):
+    possibleMoves = board.get_possible_moves()
+    valueAB = 999999999
+    for move in possibleMoves:
+        copyBoard = board.copy()
+        copyBoard.add_disk(move, max_player, False)
+        min_value = maximizeAlpha(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2))
+        valueAB = max(valueAB, min_value)
+        if valueAB >= alpha:
+            return valueAB
+        beta = max(beta, valueAB)
+    return valueAB
+
+def alpha_beta_algo(board, depth, turn, alpha, beta, max_player):
+    if depth == 0 or board.check_victory():
+        return board.eval(max_player)
+
+    if max_player == 1:
+        best_score = -9999999999
+        moves = board.get_possible_moves()
+        for move in moves :
+            algo_board = board.copy()
+            algo_board.add_disk(move, max_player,False)
+            curr_score = alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player())
+            best_score = max(curr_score, best_score)
+            alpha = max(alpha, best_score)
+            if beta <= alpha:
+                break
+        return best_score
+    else:
+        best_score = 9999999
+        for move in board.get_possible_moves():
+            algo_board = board.copy()
+            algo_board.add_disk(move, max_player, False)
+            curr_score = alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player())
+            best_score = min(curr_score, best_score)
+            beta = min(beta, best_score)
+            if beta <= alpha:
+                break
+        return best_score
+
 
 #To verify how many pieces we can make in one sequence to get 4 pieces
 def evaluate_window(window,turn):
@@ -26,18 +97,18 @@ def evaluate_window(window,turn):
     opp = (turn % 2) + 1
     #getting the score based on the player and number of empty spots
     if window.count(piece) == 3 and window.count(0) == 1:
-        score += 100*999
-    elif window.count(piece) == 2 and window.count(0) == 2:
-        score += 50*999
-    elif window.count(piece) == 1 and window.count(0) == 3:
-        score += 10
+        score += 50
+    if window.count(piece) == 2 and window.count(0) == 2:
+        score += 15
+    if window.count(piece) == 1 and window.count(0) == 3:
+        score += 5
 
     if window.count(opp) == 3 and window.count(0) == 1:
-        score -= 100*999
+        score -= 50
     if window.count(opp) == 2 and window.count(0) == 2:
-        score -= 50*99
-    if window.count(opp) == 3 and window.count(0) == 1:
         score -= 10
+    if window.count(opp) == 1 and window.count(0) == 3:
+        score -= 2
     return score
 
 
@@ -45,7 +116,7 @@ class Board:
     grid = np.array([[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0],
                      [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]])
 #To give a score to a grid based on directions
-    def score_position(self, player):
+    def eval(self, player):
         BOARD_WIDTH  = 6 #cols
         BOARD_HEIGHT = 5 #rows
         LENGTH = 4
