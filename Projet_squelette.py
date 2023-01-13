@@ -84,7 +84,6 @@ def alpha_beta_algo(board, depth, turn, alpha, beta, max_player):
                 break
         return best_score
 
-
 #To verify how many pieces we can make in one sequence to get 4 pieces
 def evaluate_window(window, turn):
     score = 0
