@@ -18,71 +18,67 @@ for i in range(42):
     player_type.append('AI: alpha-beta level '+str(i+1))
 
 def alpha_beta_decision(board, turn, ai_level, queue, max_player):
-    possible_moves = board.get_possible_moves()
-    best_move = possible_moves[0]
+    moves = board.get_possible_moves()
+    best_move = moves[2]
     best_value = -999999999
     alpha = -999999999
-    beta = 99999999
-    for move in possible_moves:
+    beta = 999999999
+    for m in moves:
         copy_board = board.copy()
-        copy_board.add_disk(move, max_player, False)
-
-        valueAB = alpha_beta_algo(copy_board, ai_level, turn, alpha, beta, game.current_player())
-        if valueAB > best_value:
-            best_value = valueAB
-            best_move = move
+        copy_board.add_disk(m, max_player, False)
+        alphaBeta = alpha_beta_algo(copy_board, ai_level, turn, alpha, beta, game.current_player())
+        if alphaBeta > best_value:
+            best_value = alphaBeta
+            best_move = m
         alpha = max(alpha, best_value)
     queue.put(best_move)
 
-def maximizeAlpha(board,turn, alpha, beta, max_player):
-    possibleMoves = board.get_possible_moves()
-    valueAB = -99999999
-    for move in possibleMoves :
-        copyBoard =board.copy()
-        copyBoard.add_disk(move, max_player, False)
-        min_value = minimizeBeta(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2))
-        valueAB = max(valueAB, min_value)
-        if valueAB >= beta:
-            return valueAB
-        alpha = max(alpha, valueAB)
-    return valueAB
-
-def minimizeBeta(board,turn, alpha, beta, max_player):
-    possibleMoves = board.get_possible_moves()
-    valueAB = 999999999
-    for move in possibleMoves:
+def maximizeAlpha(board, turn, alpha, beta, max_player):
+    moves = board.get_possible_moves()
+    alphaBeta = -999999999
+    for m in moves:
         copyBoard = board.copy()
-        copyBoard.add_disk(move, max_player, False)
-        min_value = maximizeAlpha(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2))
-        valueAB = max(valueAB, min_value)
-        if valueAB >= alpha:
-            return valueAB
-        beta = max(beta, valueAB)
-    return valueAB
+        copyBoard.add_disk(m, max_player, False)
+        alphaBeta = max(alphaBeta, minimizeBeta(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2)))
+        if alphaBeta >= beta:
+            return 
+        alpha = max(alpha, alphaBeta)
+    return alphaBeta
+
+def minimizeBeta(board, turn, alpha, beta, max_player):
+    moves = board.get_possible_moves()
+    alphaBeta = 999999999
+    for m in moves:
+        copyBoard = board.copy()
+        copyBoard.add_disk(m, max_player, False)
+        alphaBeta = max(alphaBeta, maximizeAlpha(copyBoard, turn + 1, alpha, beta, 2 - ((max_player + 1) % 2)))
+        if alphaBeta >= alpha:
+            return alphaBeta
+        beta = max(beta, alphaBeta)
+    return alphaBeta
 
 def alpha_beta_algo(board, depth, turn, alpha, beta, max_player):
     if depth == 0 or board.check_victory():
         return board.eval(max_player)
 
     if max_player == 1:
-        best_score = -9999999999
+        best_score = -999999999
         moves = board.get_possible_moves()
         for move in moves :
             algo_board = board.copy()
             algo_board.add_disk(move, max_player,False)
-            curr_score = alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player())
-            best_score = max(curr_score, best_score)
+            best_score = max(alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player()), best_score)
             alpha = max(alpha, best_score)
             if beta <= alpha:
                 break
         return best_score
     else:
-        best_score = 9999999
-        for move in board.get_possible_moves():
+        best_score = 999999999
+        moves = board.get_possible_moves()
+        for move in moves:
             algo_board = board.copy()
             algo_board.add_disk(move, max_player, False)
-            curr_score = alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player())
-            best_score = min(curr_score, best_score)
+            best_score = min(alpha_beta_algo(algo_board, depth - 1, turn, alpha, beta, game.current_player()), best_score)
             beta = min(beta, best_score)
             if beta <= alpha:
                 break
@@ -90,7 +86,7 @@ def alpha_beta_algo(board, depth, turn, alpha, beta, max_player):
 
 
 #To verify how many pieces we can make in one sequence to get 4 pieces
-def evaluate_window(window,turn):
+def evaluate_window(window, turn):
     score = 0
     # definig when the ia is playing
     piece = (turn % 2) + 2 #ia
@@ -106,9 +102,9 @@ def evaluate_window(window,turn):
     if window.count(opp) == 3 and window.count(0) == 1:
         score -= 50
     if window.count(opp) == 2 and window.count(0) == 2:
-        score -= 10
+        score -= 20
     if window.count(opp) == 1 and window.count(0) == 3:
-        score -= 2
+        score -= 10
     return score
 
 
